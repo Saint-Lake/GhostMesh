@@ -1,3 +1,6 @@
-FastAPI
+fastapi
+uvicorn
+sqlalchemy
+aiosqlite
 requests
 cryptography
