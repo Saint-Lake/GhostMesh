@@ -5,3 +5,4 @@ certs/
 *.log
 *.sqlite3
 .ghostmesh_id
+*.db
