@@ -3,6 +3,7 @@ from database import engine, Base
 from schemas import *
 from crud import *
 from auth import create_token
+from config import settings
 
 app = FastAPI()
 
@@ -10,17 +11,13 @@ app = FastAPI()
 async def init_db():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-
-@app.post("/admin/register")
-async def register_admin(admin: AdminCreate):
-    await create_admin(admin.username, admin.password)
-    return {"status": "admin registered"}
+    await seed_admin_if_needed(settings.ADMIN_USERNAME, settings.ADMIN_PASSWORD)
 
 @app.post("/admin/login", response_model=TokenResponse)
 async def login_admin(admin: AdminLogin):
     user = await authenticate_admin(admin.username, admin.password)
     if not user:
-        raise HTTPException(status_code=401, detail="Invalid admin credentials")
+        raise HTTPException(status_code=401, detail="Invalid credentials")
     token = create_token({"sub": user.username, "role": "admin"})
     return {"access_token": token, "token_type": "bearer"}
 
@@ -33,6 +30,6 @@ async def register_agent_endpoint(agent: AgentRegister):
 async def login_agent(agent: AgentRegister):
     auth = await authenticate_agent(agent.agent_id, agent.agent_key)
     if not auth:
-        raise HTTPException(status_code=401, detail="Invalid agent credentials")
+        raise HTTPException(status_code=401, detail="Invalid credentials")
     token = create_token({"sub": auth.agent_id, "role": "agent"})
     return {"access_token": token, "token_type": "bearer"}

@@ -3,8 +3,11 @@ from database import SessionLocal
 from auth import hash_password, verify_password
 from sqlalchemy.future import select
 
-async def create_admin(username: str, password: str):
+async def seed_admin_if_needed(username: str, password: str):
     async with SessionLocal() as session:
+        result = await session.execute(select(Admin).where(Admin.username == username))
+        if result.scalar_one_or_none():
+            return  # Admin already exists
         admin = Admin(username=username, hashed_password=hash_password(password))
         session.add(admin)
         await session.commit()

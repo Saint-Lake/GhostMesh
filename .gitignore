@@ -4,3 +4,4 @@ certs/
 .env
 *.log
 *.sqlite3
+.ghostmesh_id

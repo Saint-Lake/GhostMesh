@@ -11,6 +11,11 @@ class Settings:
     SECRET_KEY: str = os.getenv("SECRET_KEY", "changeme")
     JWT_ALGORITHM: str = os.getenv("JWT_ALGORITHM", "HS256")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 60))
+    AGENT_TOKEN_EXPIRE_DAYS = int(os.getenv("AGENT_TOKEN_EXPIRE_DAYS", 3650))
+
+    #Admin Auth
+    ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
+    ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
 
     # Database
     DB_URL: str = os.getenv("DB_URL", "sqlite+aiosqlite:///./ghostmesh.db")
