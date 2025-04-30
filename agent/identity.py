@@ -65,8 +65,18 @@ def initialize_agent():
 
     if first_time:
         register(identity["agent_id"], identity["agent_key"])
+        token = login(identity["agent_id"], identity["agent_key"])
+        identity["jwt"] = token
+        with open(CONFIG_PATH, "w") as f:
+            json.dump(identity, f)
+    elif "jwt" not in identity:
+        token = login(identity["agent_id"], identity["agent_key"])
+        identity["jwt"] = token
+        with open(CONFIG_PATH, "w") as f:
+            json.dump(identity, f)
+    else:
+        token = identity["jwt"]
 
-    token = login(identity["agent_id"], identity["agent_key"])
     return {
         "agent_id": identity["agent_id"],
         "jwt": token
