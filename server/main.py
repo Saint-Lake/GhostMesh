@@ -51,3 +51,19 @@ async def submit_result(data: ResultSubmit):
     await store_result(data.agent_id, data.task_id, data.output)
     await mark_task_complete(data.task_id)
     return {"status": "result received"}
+
+@app.get("/tasks/{agent_id}", response_model=List[TaskView], dependencies=[Depends(get_current_admin)])
+async def view_tasks(agent_id: str):
+    return await get_tasks_by_agent(agent_id)
+
+@app.get("/results/{agent_id}", response_model=List[ResultView], dependencies=[Depends(get_current_admin)])
+async def view_results(agent_id: str):
+    return await get_results_by_agent(agent_id)
+
+@app.get("/tasks", response_model=List[TaskView], dependencies=[Depends(get_current_admin)])
+async def view_all_tasks():
+    return await get_all_tasks()
+
+@app.get("/results", response_model=List[ResultView], dependencies=[Depends(get_current_admin)])
+async def view_all_results():
+    return await get_all_results()

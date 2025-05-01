@@ -34,3 +34,17 @@ class ResultSubmit(BaseModel):
     agent_id: str
     task_id: str
     output: str
+
+class TaskView(BaseModel):
+    id: str
+    agent_id: str
+    command: str
+    completed: bool
+    created_at: datetime
+
+class ResultView(BaseModel):
+    id: str
+    agent_id: str
+    task_id: str
+    output: str
+    created_at: datetime

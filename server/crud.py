@@ -2,6 +2,7 @@ from models import Admin, Agent, Task, Result
 from database import SessionLocal
 from auth import hash_password, verify_password
 from sqlalchemy.future import select
+from sqlalchemy import asc
 import uuid
 
 async def seed_admin_if_needed(username: str, password: str):
@@ -45,7 +46,9 @@ async def queue_task(agent_id: str, command: str):
 async def fetch_pending_task(agent_id: str):
     async with SessionLocal() as session:
         result = await session.execute(
-            select(Task).where(Task.agent_id == agent_id, Task.completed == False)
+            select(Task)
+            .where(Task.agent_id == agent_id, Task.completed == False)
+            .order_by(asc(Task.created_at))
         )
         return result.scalar_one_or_none()
 
@@ -61,3 +64,27 @@ async def store_result(agent_id: str, task_id: str, output: str):
     async with SessionLocal() as session:
         session.add(result)
         await session.commit()
+
+async def get_tasks_by_agent(agent_id: str):
+    async with SessionLocal() as session:
+        result = await session.execute(
+            select(Task).where(Task.agent_id == agent_id).order_by(Task.created_at.desc())
+        )
+        return result.scalars().all()
+
+async def get_results_by_agent(agent_id: str):
+    async with SessionLocal() as session:
+        result = await session.execute(
+            select(Result).where(Result.agent_id == agent_id).order_by(Result.created_at.desc())
+        )
+        return result.scalars().all()
+
+async def get_all_tasks():
+    async with SessionLocal() as session:
+        result = await session.execute(select(Task).order_by(Task.created_at.desc()))
+        return result.scalars().all()
+
+async def get_all_results():
+    async with SessionLocal() as session:
+        result = await session.execute(select(Result).order_by(Result.created_at.desc()))
+        return result.scalars().all()
