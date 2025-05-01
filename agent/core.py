@@ -3,6 +3,8 @@ import requests
 import socket
 from config import *
 from identity import *
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def get_host_info():
     hostname = socket.gethostname()
