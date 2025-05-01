@@ -23,9 +23,10 @@ async def login_admin(admin: AdminLogin):
     return {"access_token": token, "token_type": "bearer"}
 
 @app.post("/agent/register")
-async def register_agent_endpoint(agent: AgentRegister):
-    await register_agent(agent.agent_id, agent.agent_key)
-    return {"status": "agent registered"}
+async def register(data: AgentRegister):
+    await register_agent(data.agent_id, data.agent_key)  # adjust to pass real key if needed
+    await update_agent_metadata(data.agent_id, data.netbios or "", data.ip or "")
+    return {"status": "registered"}
 
 @app.post("/agent/login", response_model=TokenResponse)
 async def login_agent(agent: AgentRegister):
@@ -68,3 +69,7 @@ async def view_all_tasks():
 @app.get("/results", response_model=List[ResultView], dependencies=[Depends(get_current_admin)])
 async def view_all_results():
     return await get_all_results()
+
+@app.get("/agents", response_model=List[AgentInfo], dependencies=[Depends(get_current_admin)])
+async def get_agent_info():
+    return await list_agents()

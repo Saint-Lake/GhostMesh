@@ -31,3 +31,10 @@ class Result(Base):
     task_id = Column(String, ForeignKey("tasks.id"))
     output = Column(Text)
     created_at = Column(DateTime, default=utc_now)
+
+class AgentMetadata(Base):
+    __tablename__ = "agent_metadata"
+    agent_id = Column(String, ForeignKey("agents.agent_id"), primary_key=True)
+    ip = Column(String)
+    netbios = Column(String)
+    updated_at = Column(DateTime, default=utc_now)

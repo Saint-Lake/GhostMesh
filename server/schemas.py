@@ -1,5 +1,6 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
+from datetime import datetime
 
 # Admin
 class AdminCreate(BaseModel):
@@ -14,6 +15,8 @@ class AdminLogin(BaseModel):
 class AgentRegister(BaseModel):
     agent_id: str
     agent_key: str
+    netbios: Optional[str] = None
+    ip: Optional[str] = None
 
 class TokenResponse(BaseModel):
     access_token: str
@@ -25,6 +28,8 @@ class TaskCreate(BaseModel):
 
 class BeaconRequest(BaseModel):
     agent_id: str
+    netbios: Optional[str] = None
+    ip: Optional[str] = None
 
 class TaskResponse(BaseModel):
     task_id: Optional[str] = None
@@ -48,3 +53,8 @@ class ResultView(BaseModel):
     task_id: str
     output: str
     created_at: datetime
+
+class AgentInfo(BaseModel):
+    agent_id: str
+    netbios: Optional[str]
+    ip: Optional[str]

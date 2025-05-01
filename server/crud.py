@@ -1,9 +1,10 @@
-from models import Admin, Agent, Task, Result
+from models import Admin, Agent, Task, Result, AgentMetadata
 from database import SessionLocal
 from auth import hash_password, verify_password
 from sqlalchemy.future import select
 from sqlalchemy import asc
 import uuid
+from datetime import datetime, timezone
 
 async def seed_admin_if_needed(username: str, password: str):
     async with SessionLocal() as session:
@@ -65,6 +66,18 @@ async def store_result(agent_id: str, task_id: str, output: str):
         session.add(result)
         await session.commit()
 
+async def update_agent_metadata(agent_id: str, netbios: str, ip: str):
+    async with SessionLocal() as session:
+        metadata = await session.get(AgentMetadata, agent_id)
+        if metadata:
+            metadata.netbios = netbios
+            metadata.ip = ip
+            metadata.updated_at = datetime.now(timezone.utc)
+        else:
+            metadata = AgentMetadata(agent_id=agent_id, netbios=netbios, ip=ip)
+            session.add(metadata)
+        await session.commit()
+
 async def get_tasks_by_agent(agent_id: str):
     async with SessionLocal() as session:
         result = await session.execute(
@@ -87,4 +100,9 @@ async def get_all_tasks():
 async def get_all_results():
     async with SessionLocal() as session:
         result = await session.execute(select(Result).order_by(Result.created_at.desc()))
+        return result.scalars().all()
+    
+async def list_agents():
+    async with SessionLocal() as session:
+        result = await session.execute(select(AgentMetadata))
         return result.scalars().all()

