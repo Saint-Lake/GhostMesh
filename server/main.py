@@ -4,6 +4,7 @@ from schemas import *
 from crud import *
 from auth import *
 from config import settings
+from typing import List
 
 app = FastAPI()
 
