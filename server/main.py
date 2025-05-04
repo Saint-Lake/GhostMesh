@@ -1,10 +1,13 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Request
 from database import engine, Base
 from schemas import *
 from crud import *
 from auth import *
 from config import settings
 from typing import List
+from fastapi.responses import FileResponse
+import os
+from pathlib import Path
 
 app = FastAPI()
 
@@ -73,3 +76,30 @@ async def view_all_results():
 @app.get("/agents", response_model=List[AgentInfo], dependencies=[Depends(get_current_admin)])
 async def get_agent_info():
     return await list_agents()
+
+@app.get("/download/agent")
+async def download_agent(request: Request, os_type: str = None):
+    base_dir = Path(__file__).resolve().parent  # This points to 'server/'
+    os_map = {
+        "windows": base_dir / "binaries" / "ghostmesh.exe",
+        # "linux": base_dir / "binaries" / "agent_linux",
+        # "mac": base_dir / "binaries" / "agent_mac",
+    }
+
+    if not os_type:
+        user_agent = request.headers.get("user-agent", "").lower()
+        if "windows" in user_agent:
+            os_type = "windows"
+        elif "linux" in user_agent:
+            os_type = "linux"
+        elif "mac" in user_agent or "darwin" in user_agent:
+            os_type = "mac"
+        else:
+            raise HTTPException(status_code=400, detail="Cannot determine OS. Provide ?os_type=windows|linux|mac")
+
+    path = os_map.get(os_type)
+    if not path or not os.path.exists(path):
+        raise HTTPException(status_code=404, detail="Agent binary not available")
+
+    filename = os.path.basename(path)
+    return FileResponse(path, filename=filename, media_type="application/octet-stream")
